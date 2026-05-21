@@ -15,6 +15,7 @@ from database import (
     tamper_block,
     get_block_count,
 )
+import simulator
 
 
 class ConnectionManager:
@@ -128,7 +129,25 @@ async def tamper(index: int, body: TamperRequest):
 
 @app.get("/stats", response_model=Stats)
 async def stats():
-    return Stats(block_count=await get_block_count())
+    return Stats(block_count=await get_block_count(), simulating=simulator.is_running())
+
+
+@app.post("/simulate/start")
+async def simulate_start():
+    async def _add(address: int, value: int):
+        previous = await get_latest_block()
+        block = make_block(normalize(previous), address, value)
+        await save_block(block)
+        await manager.broadcast({"event": "new_block", "block": block})
+
+    await simulator.start(_add)
+    return {"simulating": True}
+
+
+@app.post("/simulate/stop")
+async def simulate_stop():
+    await simulator.stop()
+    return {"simulating": False}
 
 
 @app.websocket("/ws")

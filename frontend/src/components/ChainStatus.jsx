@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function ChainStatus({ blockCount, verifyResult, onVerify }) {
+export default function ChainStatus({ blockCount, verifyResult, simulating, onVerify, onSimToggle }) {
   const [loading, setLoading] = useState(false)
 
   const handleVerify = async () => {
@@ -27,9 +27,14 @@ export default function ChainStatus({ blockCount, verifyResult, onVerify }) {
     <div className="card">
       <div className="card-header">
         <span className="card-title">chain status</span>
-        <button className="btn btn-primary" onClick={handleVerify} disabled={loading}>
-          {loading ? 'verifying...' : 'verify chain'}
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-ghost" onClick={onSimToggle}>
+            {simulating ? 'stop simulator' : 'start simulator'}
+          </button>
+          <button className="btn btn-primary" onClick={handleVerify} disabled={loading}>
+            {loading ? 'verifying...' : 'verify chain'}
+          </button>
+        </div>
       </div>
       <div className="stat-row">
         <div>
@@ -39,6 +44,14 @@ export default function ChainStatus({ blockCount, verifyResult, onVerify }) {
         <div>
           <div style={{ paddingTop: 6 }}>{badge()}</div>
           <div className="stat-label" style={{ marginTop: 7 }}>integrity</div>
+        </div>
+        <div>
+          <div style={{ paddingTop: 6 }}>
+            <span className={`badge ${simulating ? 'badge-intact' : 'badge-unknown'}`}>
+              {simulating ? 'simulating' : 'idle'}
+            </span>
+          </div>
+          <div className="stat-label" style={{ marginTop: 7 }}>simulator</div>
         </div>
         {verifyResult && (
           <div>

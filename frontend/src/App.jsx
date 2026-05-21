@@ -10,6 +10,7 @@ export default function App() {
   const [blockCount, setBlockCount]       = useState(0)
   const [wsConnected, setWsConnected]     = useState(false)
   const [refreshToken, setRefreshToken]   = useState(0)
+  const [simulating, setSimulating]       = useState(false)
   const wsRef = useRef(null)
 
   const triggerRefresh = useCallback(() => setRefreshToken(t => t + 1), [])
@@ -46,9 +47,16 @@ export default function App() {
   useEffect(() => {
     fetch('/stats')
       .then(r => r.json())
-      .then(d => setBlockCount(d.block_count))
+      .then(d => { setBlockCount(d.block_count); setSimulating(d.simulating) })
       .catch(() => {})
   }, [])
+
+  const handleSimToggle = useCallback(async () => {
+    const endpoint = simulating ? '/simulate/stop' : '/simulate/start'
+    const res = await fetch(endpoint, { method: 'POST' })
+    const data = await res.json()
+    setSimulating(data.simulating)
+  }, [simulating])
 
   const handleVerify = useCallback(async () => {
     const res = await fetch('/verify')
@@ -75,7 +83,9 @@ export default function App() {
           <ChainStatus
             blockCount={blockCount}
             verifyResult={verifyResult}
+            simulating={simulating}
             onVerify={handleVerify}
+            onSimToggle={handleSimToggle}
           />
         </div>
         <BlockFeed blocks={liveFeed} />

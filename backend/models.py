@@ -28,3 +28,4 @@ class TamperRequest(BaseModel):
 
 class Stats(BaseModel):
     block_count: int
+    simulating: bool = False
